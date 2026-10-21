@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Overlay · La Grieta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Saira:wght@500;600;700;800&family=Saira+Semi+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --abismo: #08111b; --grieta: #0e1b2a; --lapis: #17304d; --linea: #2b4a6b;
+    --oro: #c8aa6e; --oro-claro: #e7d3a1; --firuze: #3fd8c5; --pergamino: #efe6d2; --niebla: #9fb2c6; --rojo: #ef5b5f; --verde: #4cc38a;
+  }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: transparent; }
+  body { font-family: 'Saira', system-ui, sans-serif; color: var(--pergamino); font-variant-numeric: tabular-nums; }
+  body.fondo { background: repeating-conic-gradient(#1a2633 0 25%, #121c27 0 50%) 0 0 / 40px 40px; }
+  .num { font-family: 'Saira Semi Condensed', 'Saira', sans-serif; }
+  .tarjeta {
+    position: absolute; width: 560px; border-radius: 18px; overflow: hidden;
+    background: rgba(9, 19, 31, .94); border: 2px solid #2c4c70;
+    box-shadow: 0 24px 60px rgba(0,0,0,.55);
+  }
+  .tarjeta::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: linear-gradient(90deg, #8a6d38, var(--oro) 30%, var(--firuze) 70%, #157f78); }
+  .cab { display: flex; align-items: center; gap: 12px; padding: 16px 22px 0; font-size: 20px; color: var(--niebla); font-weight: 600; }
+  .cab svg { width: 34px; height: 34px; }
+  .cab .reloj { margin-left: auto; font-size: 30px; color: var(--pergamino); font-weight: 700; }
+  .cab .reloj.urgente { color: #ffcf8a; }
+  .preg { padding: 8px 22px 14px; font-size: 32px; font-weight: 700; line-height: 1.15; }
+  .ops { display: flex; flex-direction: column; gap: 10px; padding: 0 22px 18px; }
+  .op { position: relative; height: 56px; border-radius: 10px; background: var(--lapis); overflow: hidden; display: flex; align-items: center; padding: 0 16px; gap: 12px; font-size: 24px; font-weight: 700; }
+  .op .relleno { position: absolute; inset: 0 auto 0 0; background: rgba(63,216,197,.28); transition: width .8s ease; }
+  .op span, .op b, .op i { position: relative; }
+  .op b { margin-left: auto; font-size: 26px; }
+  .op i { font-style: normal; color: var(--oro-claro); font-size: 22px; min-width: 64px; text-align: right; }
+  .op.gano { background: rgba(76,195,138,.25); box-shadow: inset 0 0 0 2px var(--verde); }
+  .op.gano .relleno { background: rgba(76,195,138,.25); }
+  .pie { padding: 0 22px 20px; font-size: 19px; color: var(--niebla); display: flex; justify-content: space-between; }
+  .pie b { color: var(--oro-claro); }
+  #pronostico { right: 48px; bottom: 48px; transition: transform .5s cubic-bezier(.2,.8,.2,1), opacity .4s; }
+  #pronostico.oculto { transform: translateY(40px); opacity: 0; }
+  #ranking { left: 48px; top: 48px; width: 460px; transition: opacity .4s; }
+  #ranking ol { list-style: none; margin: 0; padding: 4px 0 18px; }
+  #ranking li { display: grid; grid-template-columns: 40px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 8px 22px; font-size: 24px; font-weight: 600; }
+  #ranking li .p { color: var(--niebla); text-align: center; font-weight: 800; }
+  #ranking li:nth-child(1) .p { color: var(--oro); }
+  #ranking li .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #ranking li .v { color: var(--oro-claro); }
+  #alertas { position: absolute; top: 48px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .alerta {
+    display: flex; align-items: center; gap: 18px; padding: 18px 28px 18px 18px; border-radius: 18px;
+    background: rgba(9, 19, 31, .95); border: 2px solid var(--oro); box-shadow: 0 20px 50px rgba(0,0,0,.55);
+    font-size: 28px; font-weight: 700; animation: baja .55s cubic-bezier(.2,.9,.2,1.2);
+  }
+  .alerta .ico { width: 64px; height: 64px; border-radius: 14px; display: grid; place-items: center; background: rgba(200,170,110,.16); flex: none; }
+  .alerta .ico svg { width: 44px; height: 44px; }
+  .alerta small { display: block; font-size: 19px; font-weight: 600; color: var(--niebla); }
+  .alerta.sale { animation: sube .45s ease-in forwards; }
+  @keyframes baja { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes sube { to { transform: translateY(-120%); opacity: 0; } }
+  #invitacion { left: 48px; bottom: 48px; width: auto; padding: 16px 24px 20px; display: flex; align-items: center; gap: 16px; font-size: 24px; font-weight: 700; transition: opacity .5s; }
+  #invitacion svg { width: 46px; height: 46px; }
+  #invitacion small { display: block; font-size: 19px; color: var(--niebla); font-weight: 600; }
+  .oculto { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="emblema" viewBox="0 0 64 64">
+      <path d="M32 2 L40.5 15.5 L55 9 L48.5 23.5 L62 32 L48.5 40.5 L55 55 L40.5 48.5 L32 62 L23.5 48.5 L9 55 L15.5 40.5 L2 32 L15.5 23.5 L9 9 L23.5 15.5 Z" fill="#122a45" stroke="#c8aa6e" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M32 13 L37 25 L49 21 L41 32 L49 43 L37 39 L32 51 L27 39 L15 43 L23 32 L15 21 L27 25 Z" fill="none" stroke="#e7d3a1" stroke-opacity=".55" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M32 22 L40 32 L32 42 L24 32 Z" fill="#3fd8c5"/>
+    </symbol>
+    <symbol id="ficha" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10.5" fill="#c8aa6e" stroke="#8a6d38" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="7.2" fill="none" stroke="#8a6d38" stroke-width="1"/>
+      <path d="M12 6.2 L13.6 10.4 L17.8 12 L13.6 13.6 L12 17.8 L10.4 13.6 L6.2 12 L10.4 10.4 Z" fill="#5c4520"/>
+    </symbol>
+    <symbol id="regalo" viewBox="0 0 24 24"><g fill="none" stroke="#c8aa6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="17" height="4.5" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8v12"/><path d="M12 8c-2-3.5-6-3.5-6-1.2C6 8 9 8 12 8c3 0 6 0 6-1.2C18 4.5 14 4.5 12 8z"/></g></symbol>
+  </defs>
+</svg>
+<div class="tarjeta oculto" id="pronostico" aria-live="polite"></div>
+<div class="tarjeta oculto" id="ranking"></div>
+<div id="alertas"></div>
+<div class="tarjeta oculto" id="invitacion"></div>
+<script src="/assets/demo.js"></script>
+<script src="/assets/overlay.js"></script>
+</body>
+</html>

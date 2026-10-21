@@ -1,0 +1,34 @@
+# La Grieta del Persa — configuración de Cloudflare Workers
+# Guía completa en ../LEEME.md
+
+name = "grieta-del-persa"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# La web (index, panel, overlays y la app descargable) se sirve desde /public
+[assets]
+directory = "../public"
+binding = "ASSETS"
+run_worker_first = ["/api/*", "/auth/*", "/webhooks/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "persa"
+database_id = "PEGAR_ACA_EL_ID_DE_LA_BASE"   # sale de: npx wrangler d1 create persa
+
+# Cada minuto: detectar partidas con la API de Riot y cerrar partidas abandonadas
+[triggers]
+crons = ["* * * * *"]
+
+[vars]
+PUBLIC_URL = ""            # ej: https://grietadelpersa.com (sin barra al final). Vacío = usa el dominio de la petición
+TWITCH_CLIENT_ID = ""      # de dev.twitch.tv/console
+KICK_CLIENT_ID = ""        # de kick.com/settings/developer
+DEV_MODE = "0"             # "1" habilita el login de prueba (/auth/dev). Nunca en producción.
+
+# Secretos (no van en este archivo). Cargalos con:
+#   npx wrangler secret put ADMIN_PASSWORD
+#   npx wrangler secret put TWITCH_CLIENT_SECRET
+#   npx wrangler secret put TWITCH_EVENTSUB_SECRET
+#   npx wrangler secret put KICK_CLIENT_SECRET
+#   npx wrangler secret put RIOT_API_KEY

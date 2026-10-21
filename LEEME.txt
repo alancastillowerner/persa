@@ -1,0 +1,288 @@
+LA GRIETA DEL PERSA
+Pasos para poner todo en marcha
+==================================================================
+
+Tiempo estimado: entre 30 y 60 minutos, una sola vez.
+Lo que vas a necesitar:
+  - Una PC con Windows y conexión a internet.
+  - La carpeta "persa-pronosticos" descomprimida (del archivo grieta-del-persa.zip).
+  - Una cuenta de Cloudflare (gratis).
+  - La cuenta de Kick de El Persa (con verificación en dos pasos activada).
+  - Opcional: la cuenta de Twitch de El Persa (solo si es Afiliado o Partner).
+  - Opcional: una cuenta en developer.riotgames.com.
+
+Donde dice TU-DOMINIO, reemplazalo por la dirección de la web
+(por ejemplo grietadelpersa.com o grieta-del-persa.tuusuario.workers.dev).
+
+
+------------------------------------------------------------------
+PASO 1. Instalar Node.js
+------------------------------------------------------------------
+1. Entrá a https://nodejs.org y descargá la versión LTS.
+2. Instalala con las opciones por defecto.
+3. Para comprobarlo, abrí "Símbolo del sistema" (tecla Windows, escribí cmd)
+   y escribí:
+       node --version
+   Tiene que mostrar v20 o más.
+
+
+------------------------------------------------------------------
+PASO 2. Crear la cuenta de Cloudflare
+------------------------------------------------------------------
+1. Entrá a https://dash.cloudflare.com y creá una cuenta gratis.
+2. Confirmá el mail.
+
+
+------------------------------------------------------------------
+PASO 3. Crear la base de datos y publicar la web
+------------------------------------------------------------------
+1. Abrí "Símbolo del sistema" y entrá a la carpeta del servidor. Ejemplo:
+       cd C:\Users\TU_USUARIO\Downloads\persa-pronosticos\worker
+
+2. Iniciá sesión en Cloudflare (se abre el navegador para autorizar):
+       npx wrangler login
+
+3. Creá la base de datos:
+       npx wrangler d1 create persa
+   Va a mostrar algo como:  database_id = "1234abcd-...."
+   Copiá ese código.
+
+4. Abrí el archivo worker\wrangler.toml con el Bloc de notas.
+   Reemplazá PEGAR_ACA_EL_ID_DE_LA_BASE por el código que copiaste. Guardá.
+
+5. Creá las tablas:
+       npx wrangler d1 execute persa --remote --file=schema.sql
+
+6. Publicá por primera vez:
+       npx wrangler deploy
+   Al final muestra la dirección de la web, algo como:
+       https://grieta-del-persa.tuusuario.workers.dev
+   Anotala: esa es TU-DOMINIO por ahora.
+
+7. Cargá la contraseña del panel del streamer (elegí una larga):
+       npx wrangler secret put ADMIN_PASSWORD
+   Te pide que la escribas. No se ve mientras la tipeás, es normal.
+
+8. Opcional pero recomendado: usar un dominio propio.
+   El dominio tiene que estar agregado a tu cuenta de Cloudflare. Después,
+   en el panel de Cloudflare abrí el worker grieta-del-persa > Settings >
+   Domains & Routes > Add > Custom domain. Si usás dominio propio, desde acá
+   en adelante TU-DOMINIO es ese.
+
+9. Abrí worker\wrangler.toml y en PUBLIC_URL poné la dirección completa,
+   sin barra al final. Ejemplo:
+       PUBLIC_URL = "https://grietadelpersa.com"
+   Guardá y publicá de nuevo:
+       npx wrangler deploy
+
+Prueba: entrá a https://TU-DOMINIO. Tiene que aparecer la web
+"Esperando la próxima partida".
+
+
+------------------------------------------------------------------
+PASO 4. Crear la app de Kick (login y canjes de puntos)
+------------------------------------------------------------------
+1. En Kick, con la cuenta que va a administrar la app, activá la
+   verificación en dos pasos desde la configuración de la cuenta.
+2. Entrá a https://kick.com/settings/developer y tocá crear app.
+3. Completá:
+     - Nombre: La Grieta del Persa
+     - Redirect URL:  https://TU-DOMINIO/auth/kick/callback
+     - Permisos (scopes), si te los pide: user:read, channel:read,
+       channel:rewards:read, channel:rewards:write, events:subscribe
+4. Activá "Enable Webhooks" y en Webhook URL poné:
+       https://TU-DOMINIO/webhooks/kick
+5. Guardá. Copiá el Client ID y el Client Secret.
+6. Abrí worker\wrangler.toml y pegá el Client ID en KICK_CLIENT_ID:
+       KICK_CLIENT_ID = "el-client-id"
+7. En "Símbolo del sistema" (dentro de la carpeta worker):
+       npx wrangler secret put KICK_CLIENT_SECRET
+   Pegá el Client Secret.
+
+
+------------------------------------------------------------------
+PASO 5. Crear la app de Twitch (opcional)
+------------------------------------------------------------------
+Solo si El Persa también transmite en Twitch. Los puntos de canal de
+Twitch existen únicamente en canales Afiliados o Partners.
+
+1. Entrá a https://dev.twitch.tv/console (necesita verificación en dos pasos).
+2. Registrar aplicación:
+     - Nombre: La Grieta del Persa
+     - OAuth Redirect URL:  https://TU-DOMINIO/auth/twitch/callback
+     - Categoría: Website Integration
+     - Tipo de cliente: Confidencial
+3. Copiá el Client ID y generá un Client Secret.
+4. En worker\wrangler.toml pegá el Client ID en TWITCH_CLIENT_ID.
+5. Cargá los secretos:
+       npx wrangler secret put TWITCH_CLIENT_SECRET
+       npx wrangler secret put TWITCH_EVENTSUB_SECRET
+   El segundo lo inventás vos: cualquier texto de 20 a 60 letras y números
+   sin espacios (por ejemplo grieta2026persaXk81mQz7). No hace falta
+   recordarlo.
+
+
+------------------------------------------------------------------
+PASO 6. Clave de Riot Games (opcional)
+------------------------------------------------------------------
+Sirve para dos cosas: detectar partidas aunque la app de PC esté cerrada
+y confirmar el resultado si la app se corta en medio de una partida.
+
+1. Entrá a https://developer.riotgames.com con una cuenta de Riot.
+2. Registrá un producto (Register Product > Personal API Key).
+   En la descripción explicá que es una web de pronósticos GRATUITOS para la
+   comunidad de un streamer, sin apuestas ni premios en dinero.
+   Riot rechaza cualquier producto con apuestas.
+3. Cuando lo aprueben, copiá la clave (empieza con RGAPI-) y cargala:
+       npx wrangler secret put RIOT_API_KEY
+   Ojo: la "Development API Key" que aparece de entrada vence cada 24 horas.
+   Sirve para probar, pero para usar todos los días necesitás la del producto
+   aprobado.
+
+
+------------------------------------------------------------------
+PASO 7. Publicar con todo cargado
+------------------------------------------------------------------
+Dentro de la carpeta worker:
+       npx wrangler deploy
+
+
+------------------------------------------------------------------
+PASO 8. Configurar desde el panel del streamer
+------------------------------------------------------------------
+1. Entrá a https://TU-DOMINIO/panel.html con la contraseña del paso 3.
+2. Sección "Conexiones":
+   a) Kick: tocá "Conectar canal de Kick" e iniciá sesión con la cuenta
+      de El Persa. Después tocá "Crear recompensas".
+      Se crean en su canal: "Cargar 1 ficha" (100 puntos), "Cargar 10 fichas"
+      (1.000 puntos) y "Cargar 50 fichas" (5.000 puntos).
+   b) Twitch (si corresponde): lo mismo. "Conectar canal de Twitch" y
+      "Crear recompensas".
+   c) Conector de PC: tocá "Generar código de conexión" y "Copiar código".
+      Guardalo en algún lado: no se vuelve a mostrar.
+      Tocá "Descargar GrietaConector.exe".
+   d) Riot Games (si hiciste el paso 6): nombre de invocador, tag sin # y
+      servidor (LAS, LAN, etc.). Tocá "Guardar Riot ID".
+3. Sección "Premios": revisá los premios y precios. Cambiá, agregá o borrá
+   lo que quieras. Recordá: nada de dinero ni cosas revendibles.
+4. Sección "Ajustes": revisá nombre, foto, canal de Kick, redes y valores
+   de fichas. Si cambiás los puntos por ficha o los packs, volvé a
+   Conexiones y tocá "Actualizar recompensas".
+
+
+------------------------------------------------------------------
+PASO 9. Instalar la app en la PC de El Persa
+------------------------------------------------------------------
+1. Copiá GrietaConector.exe a la PC donde juega (por ejemplo a Documentos).
+2. Doble clic. Si Windows muestra "Windows protegió su PC", tocá
+   "Más información" y después "Ejecutar de todas formas".
+   Pasa porque el programa no tiene firma digital paga. Es solo la primera vez.
+3. Se abre una ventana. Pegá el código del paso 8c y tocá "Conectar".
+4. Tiene que decir "Conectado a la web".
+5. Activá "Abrir con Windows" para que arranque sola cada vez que se prende
+   la PC (arranca en segundo plano, sin ventana).
+6. Se puede cerrar la ventana: el conector sigue funcionando. Para volver a
+   verla, abrí GrietaConector.exe otra vez.
+
+
+------------------------------------------------------------------
+PASO 10. Agregar los overlays en OBS o Streamlabs
+------------------------------------------------------------------
+1. En el panel, sección "Overlays para OBS", copiá el link que quieras.
+   Recomendado para empezar: el de "Todo junto" (tipo=completo).
+2. OBS: en Fuentes tocá + > Navegador > Crear nueva.
+   Streamlabs: + > Browser Source.
+3. Pegá el link en URL. Ancho 1920, alto 1080. Aceptar.
+4. Probá con los botones "Probar alerta de carga" y "Probar alerta de
+   premio" del panel: la alerta tiene que aparecer en OBS.
+   El cuadro del pronóstico solo aparece cuando hay uno abierto.
+
+
+------------------------------------------------------------------
+PASO 11. Prueba final (antes de anunciarlo en el stream)
+------------------------------------------------------------------
+Con una cuenta secundaria de Kick (no la de El Persa):
+ [ ] Entrar a la web con "Entrar con Kick". Tiene que mostrar 50 fichas.
+ [ ] En el chat del canal, canjear "Cargar 1 ficha" con puntos de canal.
+     En unos segundos la web tiene que mostrar 51 y el overlay una alerta.
+ [ ] El Persa abre League y entra a una partida (puede ser una normal).
+     La app tiene que mostrar "En partida con ..." y la web "En vivo",
+     con los pronósticos abiertos.
+ [ ] Hacer un pronóstico con la cuenta secundaria.
+ [ ] Al terminar la partida, los pronósticos se resuelven solos y la
+     web muestra "Victoria" o "Derrota" en la actividad.
+ [ ] Canjear un premio barato con la cuenta secundaria y verlo en el
+     panel, sección "Canjes". Tocar "Devolver fichas" para probar.
+
+
+------------------------------------------------------------------
+EL DÍA A DÍA DEL STREAMER
+------------------------------------------------------------------
+- Antes del stream: nada, si activó "Abrir con Windows". Si no, abrir
+  GrietaConector.exe.
+- Durante el stream: jugar. Los pronósticos se abren y se cierran solos.
+- Cuando alguien canjea un premio: aparece la alerta en pantalla. Lo
+  cumple en el stream y después lo marca como "Cumplido" en el panel.
+- Si quiere un pronóstico especial ("¿Hace pentakill hoy?"): panel >
+  Partida y pronósticos > Crear pronóstico especial. Ese lo resuelve él
+  con los botones "Salió: ...".
+- Si algo sale mal en una partida (se cayó, remake raro): panel > Partida
+  y pronósticos > "Anular partida". Se devuelve todo.
+
+
+------------------------------------------------------------------
+PROBLEMAS FRECUENTES
+------------------------------------------------------------------
+El canje de puntos no suma fichas
+  - Revisá en la app de Kick que "Enable Webhooks" esté activado y la URL
+    sea exactamente https://TU-DOMINIO/webhooks/kick
+  - Solo funcionan las recompensas creadas desde el panel. Si las creaste
+    a mano en Kick, borralas y tocá "Crear recompensas" en el panel.
+  - El viewer tiene que entrar a la web con la MISMA cuenta con la que
+    canjeó. Si todavía no entró, las fichas lo esperan: se acreditan
+    cuando entre.
+
+"El inicio con Kick todavía no está configurado"
+  - Falta KICK_CLIENT_ID en wrangler.toml o no volviste a publicar
+    (npx wrangler deploy).
+
+El login vuelve con error
+  - La Redirect URL de la app de Kick o Twitch tiene que coincidir letra
+    por letra con https://TU-DOMINIO/auth/kick/callback (o /twitch/).
+  - PUBLIC_URL en wrangler.toml tiene que ser la misma dirección.
+
+La app dice "el código de conexión ya no es válido"
+  - Se generó un código nuevo en el panel. Copiá el último, tocá
+    "Cambiar código" en la app y pegalo.
+
+La app no detecta la partida
+  - Detecta la partida cuando ya estás jugando, no en el lobby ni en la
+    selección de campeones.
+  - La herramienta de práctica se ignora a propósito.
+
+La ventana de la app no se abre
+  - Usa Microsoft Edge, que viene con Windows 10 y 11. Si no está, abre el
+    navegador por defecto en la dirección http://127.0.0.1:47823
+
+El overlay no muestra nada
+  - El cuadro del pronóstico solo aparece cuando hay uno abierto. Fuera de
+    partida, en "Todo junto" se ve la invitación a entrar a la web.
+
+La web anda lenta o da error con muchos viewers
+  - El plan gratis de Cloudflare permite 100.000 pedidos por día. Con más
+    de 50 viewers durante horas, pasá al plan Workers Paid (5 USD por mes)
+    desde el panel de Cloudflare, en la sección de Workers.
+
+
+------------------------------------------------------------------
+REGLAS IMPORTANTES
+------------------------------------------------------------------
+- Pronosticar es gratis y las fichas no tienen valor en dinero. Así se
+  respeta la regla de Riot que prohíbe apuestas.
+- Twitch no permite cambiar puntos de canal por monedas virtuales. El
+  sistema de 100 puntos = 1 ficha queda en zona gris en Twitch. Si Twitch
+  lo objeta, se puede cambiar para que las recompensas den comodines.
+- Los premios no pueden ser dinero, juegos de Steam ni nada revendible.
+  Para regalar algo de valor, hacer un sorteo aparte con entrada gratis.
+- En Argentina el juego de azar online está regulado por provincia.
+  Conviene que el streamer lo consulte con un abogado antes de lanzar.

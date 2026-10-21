@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel del streamer · La Grieta</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Saira:wght@400;500;600;700;800&family=Saira+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/grieta.css">
+<style>
+  .p-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; max-width: 1280px; margin: 0 auto; padding: 24px 20px 60px; }
+  .p-nav { position: sticky; top: 88px; display: flex; flex-direction: column; gap: 2px; align-self: start; }
+  .p-nav a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radio-s); color: var(--niebla); font-weight: 600; font-size: 14px; }
+  .p-nav a:hover { background: var(--grieta); color: var(--pergamino); text-decoration: none; }
+  .p-nav a[aria-current="page"] { background: var(--grieta); color: var(--pergamino); box-shadow: inset 3px 0 0 var(--oro); }
+  .p-nav .badge { margin-left: auto; background: var(--oro); color: #1a1206; border-radius: 20px; padding: 0 8px; font-size: 12px; font-weight: 800; }
+  .p-main { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .p-main h1 { margin: 0; font-size: 24px; }
+  .p-main > p.intro { margin: -8px 0 0; color: var(--niebla); max-width: 75ch; }
+  .tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .tarj { padding: 16px; background: var(--grieta); border: 1px solid var(--linea); border-radius: var(--radio); display: flex; flex-direction: column; gap: 6px; }
+  .tarj span { color: var(--niebla); font-size: 13px; }
+  .tarj b { font-size: 22px; font-family: var(--f-num); }
+  .tarj .ok { color: var(--verde); }
+  .tarj .mal { color: #ffb0b2; }
+  .tarj .neutro { color: var(--niebla); }
+  .checklist { list-style: none; margin: 0; padding: 0; }
+  .checklist li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--linea); }
+  .checklist li:first-child { border-top: 0; }
+  .checklist .dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--linea-2); color: var(--niebla); font-size: 12px; font-weight: 800; font-family: var(--f-num); }
+  .checklist .hecho .dot { background: var(--verde); border-color: var(--verde); color: #05210f; }
+  .checklist small { display: block; color: var(--niebla); }
+  .form { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; padding: 16px; }
+  .form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--niebla); }
+  .form label.check { flex-direction: row; align-items: center; gap: 10px; color: var(--pergamino); font-size: 14px; }
+  .form .ancho-total { grid-column: 1 / -1; }
+  .acciones { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .codigo { font-family: ui-monospace, Consolas, monospace; font-size: 12px; word-break: break-all; padding: 12px; background: var(--abismo-2); border: 1px dashed var(--oro-osc); border-radius: var(--radio-s); color: var(--oro-claro); }
+  .log { margin: 0; padding: 12px 16px 16px 34px; color: var(--niebla); font-size: 13px; }
+  .overlay-item { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; padding: 16px; border-top: 1px solid var(--linea); align-items: start; }
+  .overlay-item:first-of-type { border-top: 0; }
+  .overlay-item h3 { margin: 0 0 4px; font-size: 16px; }
+  .overlay-item p { margin: 0 0 10px; color: var(--niebla); font-size: 14px; }
+  .previa { position: relative; width: 360px; height: 203px; border-radius: var(--radio-s); overflow: hidden; border: 1px solid var(--linea-2);
+    background: repeating-conic-gradient(#1a2633 0 25%, #121c27 0 50%) 0 0 / 20px 20px; }
+  .previa iframe { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; border: 0; transform: scale(.1875); transform-origin: 0 0; pointer-events: none; }
+  .fila-mercado { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 14px 16px; border-top: 1px solid var(--linea); align-items: center; }
+  .fila-mercado:first-child { border-top: 0; }
+  .fila-mercado .opts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .login-box { max-width: 380px; margin: 12vh auto; padding: 28px; background: var(--grieta); border: 1px solid var(--linea-2); border-radius: 14px; display: flex; flex-direction: column; gap: 14px; }
+  .login-box svg { width: 54px; height: 54px; }
+  .login-box h1 { margin: 0; font-family: var(--f-marca); font-size: 24px; }
+  .tabla input.campo { height: 34px; }
+  @media (max-width: 900px) {
+    .p-layout { grid-template-columns: minmax(0, 1fr); }
+    .p-nav { position: static; flex-direction: row; overflow-x: auto; }
+    .p-nav a { white-space: nowrap; }
+    .overlay-item { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="emblema" viewBox="0 0 64 64">
+      <path d="M32 2 L40.5 15.5 L55 9 L48.5 23.5 L62 32 L48.5 40.5 L55 55 L40.5 48.5 L32 62 L23.5 48.5 L9 55 L15.5 40.5 L2 32 L15.5 23.5 L9 9 L23.5 15.5 Z" fill="#122a45" stroke="#c8aa6e" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M32 13 L37 25 L49 21 L41 32 L49 43 L37 39 L32 51 L27 39 L15 43 L23 32 L15 21 L27 25 Z" fill="none" stroke="#e7d3a1" stroke-opacity=".55" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M32 22 L40 32 L32 42 L24 32 Z" fill="#3fd8c5"/>
+      <path d="M32 22 L34.5 31 L32 42 L30 33 Z" fill="#08111b" fill-opacity=".55"/>
+    </symbol>
+  </defs>
+</svg>
+<div id="app"></div>
+<div class="avisos" id="avisos" aria-live="polite"></div>
+<script src="/assets/panel.js"></script>
+</body>
+</html>

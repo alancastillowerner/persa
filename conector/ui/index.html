@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conector de La Grieta</title>
+<link rel="icon" href="/icono.svg" type="image/svg+xml">
+<style>
+  :root {
+    --abismo: #08111b; --grieta: #0e1b2a; --grieta-2: #122336; --lapis: #17304d; --linea: #1f3650; --linea-2: #2b4a6b;
+    --oro: #c8aa6e; --oro-claro: #e7d3a1; --firuze: #3fd8c5; --pergamino: #efe6d2; --niebla: #8ea3b9; --niebla-2: #5f7790;
+    --rojo: #ef5b5f; --verde: #4cc38a; --ambar: #ffcf8a;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: var(--abismo); color: var(--pergamino); font: 15px/1.5 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; user-select: none; }
+  button, textarea { font: inherit; color: inherit; }
+  .num { font-variant-numeric: tabular-nums; }
+  header { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--linea);
+    background-color: #0d1d30;
+    background-image: linear-gradient(100deg, rgba(8,17,27,.95), rgba(12,30,52,.7)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23c8aa6e' stroke-opacity='.35'%3E%3Cpath d='M28 8 L34 22 L48 28 L34 34 L28 48 L22 34 L8 28 L22 22 Z'/%3E%3Crect x='17' y='17' width='22' height='22'/%3E%3C/g%3E%3C/svg%3E"); }
+  header img { width: 42px; height: 42px; }
+  header b { display: block; font-family: Georgia, 'Times New Roman', serif; font-size: 18px; letter-spacing: .01em; }
+  header span { color: var(--niebla); font-size: 13px; }
+  main { padding: 18px 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .tarjeta { background: var(--grieta); border: 1px solid var(--linea); border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 4px 12px; align-items: center; }
+  .tarjeta .luz { grid-row: span 2; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--lapis); }
+  .tarjeta .luz i { width: 12px; height: 12px; border-radius: 50%; background: var(--niebla-2); }
+  .tarjeta.ok .luz i { background: var(--verde); box-shadow: 0 0 0 4px rgba(76,195,138,.18); }
+  .tarjeta.mal .luz i { background: var(--rojo); box-shadow: 0 0 0 4px rgba(239,91,95,.18); }
+  .tarjeta.espera .luz i { background: var(--ambar); }
+  .tarjeta.vivo .luz i { background: var(--firuze); animation: latido 1.6s infinite; }
+  @keyframes latido { 0% { box-shadow: 0 0 0 0 rgba(63,216,197,.5); } 70% { box-shadow: 0 0 0 9px rgba(63,216,197,0); } 100% { box-shadow: 0 0 0 0 rgba(63,216,197,0); } }
+  .tarjeta b { font-size: 16px; }
+  .tarjeta small { color: var(--niebla); font-size: 13px; }
+  .cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cifra { background: var(--grieta); border: 1px solid var(--linea); border-radius: 12px; padding: 12px 16px; }
+  .cifra span { display: block; color: var(--niebla); font-size: 13px; }
+  .cifra b { font-size: 26px; font-weight: 600; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--linea-2); background: var(--grieta-2); font-weight: 600; font-size: 14px; cursor: pointer; }
+  .btn:hover { background: var(--lapis); }
+  .btn.oro { background: var(--oro); border-color: var(--oro); color: #1a1206; }
+  .btn.oro:hover { background: var(--oro-claro); }
+  .btn.peligro { border-color: #6b2a2d; color: #ffb3b5; background: transparent; }
+  .btn.fantasma { background: transparent; border-color: transparent; color: var(--niebla); }
+  .btn:disabled { opacity: .55; cursor: wait; }
+  .botones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .interruptor { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--grieta); border: 1px solid var(--linea); border-radius: 12px; cursor: pointer; }
+  .interruptor small { display: block; color: var(--niebla); font-size: 13px; }
+  .switch { width: 44px; height: 26px; border-radius: 13px; background: var(--lapis); position: relative; flex: none; transition: background .15s; }
+  .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--niebla); transition: transform .15s, background .15s; }
+  .interruptor[aria-checked="true"] .switch { background: var(--firuze); }
+  .interruptor[aria-checked="true"] .switch::after { transform: translateX(18px); background: #04201d; }
+  .nota { margin: 0; color: var(--niebla); font-size: 13px; }
+  details { background: var(--grieta); border: 1px solid var(--linea); border-radius: 12px; }
+  summary { padding: 12px 16px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--niebla); }
+  ul.log { list-style: none; margin: 0; padding: 0 16px 12px; max-height: 190px; overflow: auto; font-size: 12.5px; user-select: text; }
+  ul.log li { display: flex; gap: 10px; padding: 3px 0; color: var(--niebla); }
+  ul.log li time { color: var(--niebla-2); flex: none; }
+  ul.log li.err { color: #ffb0b2; }
+  textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 10px; border: 1px solid var(--linea-2); background: #0b1724; resize: vertical; font-family: Consolas, monospace; font-size: 12.5px; user-select: text; }
+  textarea:focus { outline: none; border-color: var(--firuze); }
+  .error { color: #ffb0b2; font-size: 14px; min-height: 20px; margin: 0; }
+  ol.pasos { margin: 0; padding-left: 20px; color: var(--niebla); display: flex; flex-direction: column; gap: 4px; }
+  ol.pasos b { color: var(--pergamino); }
+  h1 { margin: 0; font-size: 20px; }
+  .campeon { display: flex; align-items: center; gap: 10px; }
+  .campeon img { width: 30px; height: 30px; border-radius: 6px; }
+  :focus-visible { outline: 2px solid var(--firuze); outline-offset: 2px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <img src="/icono.svg" alt="">
+  <div><b id="titulo">Conector de La Grieta</b><span id="subtitulo">Partidas en vivo para los pronósticos</span></div>
+</header>
+
+<main id="configurar" class="hidden">
+  <h1>Conectá la app con tu web</h1>
+  <ol class="pasos">
+    <li>Entrá al <b>panel del streamer</b> de tu web.</li>
+    <li>En <b>Conexiones</b>, tocá <b>Generar código de conexión</b>.</li>
+    <li>Copiá el código y pegalo acá abajo.</li>
+  </ol>
+  <textarea id="codigo" placeholder="GRIETA-..." spellcheck="false" aria-label="Código de conexión"></textarea>
+  <p class="error" id="error-codigo" role="alert"></p>
+  <button class="btn oro" id="conectar">Conectar</button>
+</main>
+
+<main id="principal" class="hidden">
+  <div class="tarjeta" id="t-web"><span class="luz"><i></i></span><b id="web-titulo">Conectando…</b><small id="web-sub"></small></div>
+  <div class="tarjeta" id="t-liga"><span class="luz"><i></i></span><b id="liga-titulo">Esperando a League of Legends</b><small id="liga-sub"></small></div>
+  <div class="cifras">
+    <div class="cifra"><span>Pronósticos abiertos</span><b class="num" id="abiertos">0</b></div>
+    <div class="cifra"><span>Eventos enviados</span><b class="num" id="eventos">0</b></div>
+  </div>
+  <div class="interruptor" id="autoinicio" role="switch" aria-checked="false" tabindex="0">
+    <div>Abrir con Windows<small>Se enciende solo, sin ventana, al prender la PC.</small></div><span class="switch"></span>
+  </div>
+  <p class="nota">Podés cerrar esta ventana: el conector sigue funcionando en segundo plano. Para volver a verla, abrí GrietaConector.exe otra vez.</p>
+  <div class="botones">
+    <button class="btn" data-abrir="/">Abrir la web</button>
+    <button class="btn" data-abrir="/panel.html">Abrir el panel</button>
+  </div>
+  <details>
+    <summary>Actividad</summary>
+    <ul class="log" id="log"></ul>
+  </details>
+  <div class="botones">
+    <button class="btn fantasma" id="cambiar">Cambiar código</button>
+    <button class="btn peligro" id="salir">Apagar conector</button>
+  </div>
+</main>
+
+<main id="apagado" class="hidden">
+  <h1>El conector está apagado</h1>
+  <p class="nota">Abrí GrietaConector.exe para volver a encenderlo. Ya podés cerrar esta ventana.</p>
+</main>
+
+<script>
+(() => {
+  const TOKEN = '__TOKEN__';
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const hace = (t) => { const d = Math.max(0, (Date.now() - t) / 1000); return d < 5 ? 'recién' : d < 60 ? `hace ${Math.round(d)} s` : `hace ${Math.round(d / 60)} min`; };
+  let E = null;
+  let apagado = false;
+
+  async function post(ruta, body) {
+    const r = await fetch(ruta, { method: 'POST', headers: { 'content-type': 'application/json', 'x-token': TOKEN }, body: JSON.stringify(body || {}) });
+    return r.json();
+  }
+
+  function mostrar(id) {
+    for (const s of ['configurar', 'principal', 'apagado']) $('#' + s).classList.toggle('hidden', s !== id);
+  }
+
+  function tarjeta(el, clase) {
+    el.className = 'tarjeta ' + clase;
+  }
+
+  function render() {
+    if (apagado) return mostrar('apagado');
+    if (!E.configurado) { mostrar('configurar'); return; }
+    mostrar('principal');
+    $('#titulo').textContent = E.sitio || 'Conector de La Grieta';
+    $('#subtitulo').textContent = E.streamer ? `Conector de ${E.streamer}` : 'Partidas en vivo para los pronósticos';
+
+    if (E.conectado) {
+      tarjeta($('#t-web'), 'ok');
+      $('#web-titulo').textContent = 'Conectado a la web';
+      $('#web-sub').textContent = `${E.servidor.replace(/^https?:\/\//, '')} · último contacto ${hace(E.ultimoContacto)}`;
+    } else {
+      tarjeta($('#t-web'), E.errorServidor ? 'mal' : 'espera');
+      $('#web-titulo').textContent = E.errorServidor ? 'Sin conexión con la web' : 'Conectando…';
+      $('#web-sub').textContent = E.errorServidor || 'Reintentando solo cada pocos segundos.';
+    }
+
+    const p = E.partida;
+    const L = $('#liga-titulo');
+    const S = $('#liga-sub');
+    if (E.ignorada) {
+      tarjeta($('#t-liga'), 'espera'); L.textContent = 'Partida de práctica'; S.textContent = 'Este modo no abre pronósticos.';
+    } else if (E.liga === 'en_partida' && p) {
+      tarjeta($('#t-liga'), 'vivo');
+      L.innerHTML = `<span class="campeon">En partida con ${esc(p.campeon)} <span class="num">${mmss(p.tiempo)}</span></span>`;
+      S.textContent = `${p.k}/${p.d}/${p.a} · ${p.equipo === 'ORDER' ? 'lado azul' : 'lado rojo'} · enviando datos en vivo`;
+    } else if (E.liga === 'terminada') {
+      tarjeta($('#t-liga'), 'ok'); L.textContent = 'Partida terminada'; S.textContent = 'Los pronósticos ya se resolvieron. Esperando la próxima.';
+    } else if (E.liga === 'cargando') {
+      tarjeta($('#t-liga'), 'espera'); L.textContent = 'Cargando la partida'; S.textContent = 'Los pronósticos se abren apenas termina la pantalla de carga.';
+    } else {
+      tarjeta($('#t-liga'), ''); L.textContent = 'Esperando una partida'; S.textContent = 'Abrí League of Legends y entrá a una partida. El conector la detecta solo.';
+    }
+    $('#abiertos').textContent = E.abiertos;
+    $('#eventos').textContent = E.eventos;
+    $('#autoinicio').setAttribute('aria-checked', String(!!E.autoinicio));
+    $('#log').innerHTML = E.log.slice().reverse().slice(0, 40).map((l) => `<li class="${l.err ? 'err' : ''}"><time>${new Date(l.t).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</time><span>${esc(l.msg)}</span></li>`).join('');
+  }
+
+  async function actualizar() {
+    if (apagado) return;
+    try {
+      const r = await fetch('/api/estado', { cache: 'no-store' });
+      E = await r.json();
+      render();
+    } catch {
+      apagado = true;
+      render();
+    }
+  }
+
+  $('#conectar').onclick = async () => {
+    const b = $('#conectar');
+    b.disabled = true; b.textContent = 'Conectando…'; $('#error-codigo').textContent = '';
+    const r = await post('/api/codigo', { codigo: $('#codigo').value.trim() }).catch(() => ({ ok: false, error: 'No se pudo hablar con el conector.' }));
+    b.disabled = false; b.textContent = 'Conectar';
+    if (!r.ok) { $('#error-codigo').textContent = r.error; return; }
+    $('#codigo').value = '';
+    actualizar();
+  };
+  $('#cambiar').onclick = async () => { if (confirm('¿Borrar el código actual y cargar otro?')) { await post('/api/olvidar'); actualizar(); } };
+  $('#salir').onclick = async () => {
+    if (!confirm('Si apagás el conector, los pronósticos en vivo dejan de funcionar hasta que lo vuelvas a abrir. ¿Apagar?')) return;
+    await post('/api/salir').catch(() => {});
+    apagado = true; render();
+  };
+  const toggle = async () => {
+    const on = $('#autoinicio').getAttribute('aria-checked') !== 'true';
+    const r = await post('/api/autoinicio', { on });
+    if (!r.ok) alert(r.error);
+    actualizar();
+  };
+  $('#autoinicio').onclick = toggle;
+  $('#autoinicio').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } };
+  document.querySelectorAll('[data-abrir]').forEach((b) => { b.onclick = () => post('/api/abrir-web', { ruta: b.dataset.abrir }); });
+
+  actualizar();
+  setInterval(actualizar, 1000);
+})();
+</script>
+</body>
+</html>
